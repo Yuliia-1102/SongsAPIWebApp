@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Купівля пісні</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="lab2.js"></script>
+</head>
+<body>
+    <h1>Введіть номер вашої карти для купівлі пісні</h1>
+    <form id="purchaseForm">
+        <input type="text" id="cardNumber" required>
+        <input type="hidden" id="songId">
+        <button type="submit">Підтвердити купівлю</button>
+    </form>
+
+    <script>
+        $(document).ready(function () {
+            $('#purchaseForm').submit(function (e) {
+                e.preventDefault();
+                const songId = $('#songId').val();
+                const cardNumber = $('#cardNumber').val(); // Додайте валідацію номеру карти за необхідності
+
+                $.ajax({
+                    url: 'https://localhost:44390/api/Songs/purchase/' + songId,
+                    type: 'POST',
+                    success: function () {
+                        alert('Купівля успішна!');
+                        window.location.href = 'index.html'; // Повернення до списку пісень
+                    },
+                    error: function () {
+                        alert('Помилка при купівлі пісні.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

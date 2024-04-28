@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Деталіше про пісню</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Деталіше про пісню</h1>
+    <div id="songDetails"></div>
+
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Купити пісню</h2>
+            <form id="purchaseForm">
+                <input type="text" id="cardNumber" placeholder="Введіть 16 цифр номера карти" required>
+                <button type="submit">Підтвердити покупку</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/song-details.js"></script>
+</body>
+</html>
