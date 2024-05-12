@@ -2,11 +2,10 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Деталіше про пісню</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Деталіше про пісню</h1>
+    <h1>Детальніше про пісню</h1>
     <div id="songDetails"></div>
 
     <div id="purchaseModal" class="modal">
@@ -19,6 +18,10 @@
             </form>
         </div>
     </div>
+
+    <audio id="audioPlayer" controls style="display: none;">
+        <source id="audioSource" type="audio/mpeg">
+    </audio>
 
     <script src="js/song-details.js"></script>
 </body>

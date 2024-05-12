@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Humanizer.Localisation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -38,7 +39,7 @@ namespace SongsAPIWebApp.Controllers
 
             if (song == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Не знайдено пісню з таким індексом." });
             }
 
             return song;
@@ -51,7 +52,20 @@ namespace SongsAPIWebApp.Controllers
         {
             if (id != song.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "Неправильний ідентифікатор пісні." });
+            }
+
+            if (!_context.Genres.Any(g => g.Id == song.GenreId))
+            {
+                return BadRequest(new { message = "Жанр з вказаним індексом не існує в базі даних." });
+            }
+
+            var existingName = await _context.Songs
+                .FirstOrDefaultAsync(s => s.Name.ToLower() == song.Name.ToLower() && s.Id != id);
+
+            if (existingName != null)
+            {
+                return BadRequest(new { message = "Пісня з такою назвою вже існує." });
             }
 
             _context.Entry(song).State = EntityState.Modified;
@@ -64,7 +78,7 @@ namespace SongsAPIWebApp.Controllers
             {
                 if (!SongExists(id))
                 {
-                    return NotFound();
+                    return BadRequest(new { message = "Не знайдено пісню з таким індексом." });
                 }
                 else
                 {
@@ -80,10 +94,15 @@ namespace SongsAPIWebApp.Controllers
         [HttpPost]
         public async Task<ActionResult<Song>> PostSong(Song song)
         {
-            var existingSong = await _context.Songs.FirstOrDefaultAsync(f => f.Name == song.Name);
+            var existingSong = await _context.Songs.FirstOrDefaultAsync(f => f.Name.ToLower() == song.Name.ToLower());
             if (existingSong != null)
             {
                 return BadRequest(new { message = "Пісня з такою назвою вже існує." });
+            }
+
+            if (!_context.Genres.Any(g => g.Id == song.GenreId))
+            {
+                return BadRequest(new { message = "Жанр з вказаним індексом не існує в базі даних." });
             }
 
             _context.Songs.Add(song);
@@ -100,7 +119,7 @@ namespace SongsAPIWebApp.Controllers
             var song = await _context.Songs.FindAsync(id);
             if (song == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Неправильний ідентифікатор пісні." });
             }
 
             _context.Songs.Remove(song);
@@ -114,22 +133,33 @@ namespace SongsAPIWebApp.Controllers
             return _context.Songs.Any(e => e.Id == id);
         }
 
-        [HttpGet("search")] //пошук за жанром та виконавцем пісні
-        public async Task<ActionResult<IEnumerable<Song>>> Search([FromQuery] int? genre, [FromQuery] int? singer)
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Song>>> Search([FromQuery] int? genre, [FromQuery] int? singer) 
         {
+            if (genre.HasValue && !_context.Genres.Any(g => g.Id == genre.Value))
+            {
+                return NotFound(new { message = "Жанру з таким ідентифікатором не знайдено." });
+            }
+
+            if (singer.HasValue && !_context.Singers.Any(s => s.Id == singer.Value))
+            {
+                return NotFound(new { message = "Виконавця з таким ідентифікатором не знайдено." });
+            }
+
             var songs = _context.Songs.AsQueryable();
 
             if (genre.HasValue)
             {
-                songs = songs.Where(s => s.GenreId == genre);
+                songs = songs.Where(s => s.GenreId == genre.Value); // фільтрація
             }
             if (singer.HasValue)
             {
-                songs = songs.Where(s => s.SingersSongs.Any(ss => ss.SingerId == singer));
+                songs = songs.Where(s => s.SingersSongs.Any(ss => ss.SingerId == singer.Value)); // фільтрація
             }
 
             return Ok(await songs.ToListAsync());
         }
+
 
         // POST: api/Songs/purchase/5
         [HttpPost("purchase/{id}")]
@@ -140,23 +170,31 @@ namespace SongsAPIWebApp.Controllers
                 return BadRequest(new { message = "Номер карти має містити рівно 16 цифр." });
             }
 
-            var song = await _context.Songs.FindAsync(id);
+            var song = await _context.Songs.FirstOrDefaultAsync(s => s.Id == id);
             if (song == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Неправильний ідентифікатор пісні." });
+            }
+
+            // Перевірка, чи пісня вже була куплена 
+            var existingPurchase = await _context.Purchases
+                .FirstOrDefaultAsync(p => p.SongId == id && p.CustomerId == 1);
+            if (existingPurchase != null)
+            {
+                return BadRequest(new { message = "Пісня вже куплена." });
             }
 
             var purchase = new Purchase
             {
                 SongId = id,
-                CustomerId = 1,
+                CustomerId = 1, 
                 Status = "Куплено"
             };
 
             _context.Purchases.Add(purchase);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Пісня куплена." });
+            return Ok(new { message = "Пісня куплена.", audioUrl = song.AudioUrl });
         }
 
 
@@ -172,7 +210,7 @@ namespace SongsAPIWebApp.Controllers
 
             if (song == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Неправильний ідентифікатор пісні." });
             }
 
             var isPurchased = song.Purchases.Any(p => p.SongId == id); 

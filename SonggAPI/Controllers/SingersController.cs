@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Humanizer.Localisation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ namespace SongsAPIWebApp.Controllers
 
             if (singer == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Не знайдено співака з таким індексом." });
             }
 
             return singer;
@@ -48,7 +49,13 @@ namespace SongsAPIWebApp.Controllers
         {
             if (id != singer.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "Неправильний ідентифікатор виконавця." });
+            }
+
+            var existingSinger = await _context.Singers.FirstOrDefaultAsync(s => s.Name.ToLower() == singer.Name.ToLower() && s.Id != id);
+            if (existingSinger != null)
+            {
+                return BadRequest(new { message = "Виконавець вже існує." });
             }
 
             _context.Entry(singer).State = EntityState.Modified;
@@ -61,7 +68,7 @@ namespace SongsAPIWebApp.Controllers
             {
                 if (!SingerExists(id))
                 {
-                    return NotFound();
+                    return BadRequest(new { message = "Виконаця з вказаним індексом не існує в базі даних." });
                 }
                 else
                 {
@@ -77,6 +84,12 @@ namespace SongsAPIWebApp.Controllers
         [HttpPost]
         public async Task<ActionResult<Singer>> PostSinger(Singer singer)
         {
+            var existingSinger = await _context.Singers.FirstOrDefaultAsync(s => s.Name.ToLower() == singer.Name.ToLower());
+            if (existingSinger != null)
+            {
+                return BadRequest(new { message = "Виконавець вже існує." });
+            }
+
             _context.Singers.Add(singer);
             await _context.SaveChangesAsync();
 
@@ -90,7 +103,7 @@ namespace SongsAPIWebApp.Controllers
             var singer = await _context.Singers.FindAsync(id);
             if (singer == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Неправильний ідентифікатор виконавця." });
             }
 
             _context.Singers.Remove(singer);

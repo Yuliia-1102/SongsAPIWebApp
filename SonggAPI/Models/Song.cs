@@ -34,6 +34,11 @@ namespace SongsAPIWebApp.Models
             set { price = value; }
         }
 
+        [Column(TypeName = "nvarchar(200)")]
+        [Display(Name = "URL аудіо файлу")]
+        [RegularExpression(@"^https:\/\/.*", ErrorMessage = "Посилання повинно починатися з https://")]
+        public string? AudioUrl { get; set; }
+
         [Display(Name = "Виконавці")]
         public virtual ICollection<SingersSong> SingersSongs { get; set; }
 

@@ -14,9 +14,8 @@ async function fetchSongDetails(songId) {
     displaySongDetails(data);
 }
 
-function displaySongDetails(data) {
+function displaySongDetails(data, isPurchased = false) {
     const song = data.song;
-    const isPurchased = data.isPurchased;
     const details = document.getElementById('songDetails');
     let htmlContent = `
         <p>Назва пісні: ${song.name}</p>
@@ -25,13 +24,15 @@ function displaySongDetails(data) {
         <div>Виконавці: ${song.singersSongs.map(s => s.singer.name).join(', ')}</div>
     `;
 
-    if (!isPurchased) {
+    if (isPurchased || data.isPurchased) {
+        htmlContent += `<p>Пісню куплено. Ви можете прослухати її нижче.</p>
+                        <audio controls><source src="${song.audioUrl}" type="audio/mpeg"></audio>`;
+    } else {
         htmlContent += `<button onclick="purchaseSong(${song.id})" data-song-id="${song.id}">Купити</button>`;
     }
 
     details.innerHTML = htmlContent;
 }
-
 
 function purchaseSong(songId) {
     const modal = document.getElementById('purchaseModal');
@@ -70,7 +71,7 @@ function purchaseSong(songId) {
             if (response.ok) {
                 alert("Пісня куплена.");
                 modal.style.display = "none";
-                document.querySelector(`button[data-song-id="${songId}"]`).remove(); 
+                fetchSongDetails(songId); // Оновлення деталей пісні
             } else {
                 const result = await response.json();
                 alert(result.message || 'Не вдалося придбати пісню.');
@@ -81,8 +82,3 @@ function purchaseSong(songId) {
         }
     };
 }
-
-
-
-
-

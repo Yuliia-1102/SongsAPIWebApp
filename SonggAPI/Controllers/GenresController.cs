@@ -35,7 +35,7 @@ namespace SongsAPIWebApp.Controllers
 
             if (genre == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Не знайдено жанр з таким індексом." });
             }
 
             return genre;
@@ -48,7 +48,14 @@ namespace SongsAPIWebApp.Controllers
         {
             if (id != genre.Id)
             {
-                return BadRequest();
+                return BadRequest(new { message = "Неправильний ідентифікатор жанру." });
+            }
+
+            // Перевірка на існування жанру з такою ж назвою, незалежно від регістру
+            var existingGenre = await _context.Genres.FirstOrDefaultAsync(g => g.Name.ToLower() == genre.Name.ToLower() && g.Id != id);
+            if (existingGenre != null)
+            {
+                return BadRequest(new { message = "Жанр з такою назвою вже існує." });
             }
 
             _context.Entry(genre).State = EntityState.Modified;
@@ -61,7 +68,7 @@ namespace SongsAPIWebApp.Controllers
             {
                 if (!GenreExists(id))
                 {
-                    return NotFound();
+                    return BadRequest(new { message = "Жанр з вказаним індексом не існує в базі даних." });
                 }
                 else
                 {
@@ -77,6 +84,12 @@ namespace SongsAPIWebApp.Controllers
         [HttpPost]
         public async Task<ActionResult<Genre>> PostGenre(Genre genre)
         {
+            var existingGenre = await _context.Genres.FirstOrDefaultAsync(g => g.Name.ToLower() == genre.Name.ToLower());
+            if (existingGenre != null)
+            {
+                return BadRequest(new { message = "Жанр з такою назвою вже існує." });
+            }
+
             _context.Genres.Add(genre);
             await _context.SaveChangesAsync();
 
@@ -90,7 +103,7 @@ namespace SongsAPIWebApp.Controllers
             var genre = await _context.Genres.FindAsync(id);
             if (genre == null)
             {
-                return NotFound();
+                return BadRequest(new { message = "Неправильний ідентифікатор жанру." });
             }
 
             _context.Genres.Remove(genre);

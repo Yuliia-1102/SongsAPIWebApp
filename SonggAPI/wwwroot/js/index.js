@@ -1,7 +1,5 @@
 ﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
 window.onload = function () {
     fetchSongs();
 };
@@ -21,7 +19,7 @@ function displaySongs(songs) {
         songElement.style.display = 'flex';
         songElement.style.alignItems = 'center'; 
         songElement.style.marginBottom = '10px'; 
-        songElement.innerHTML = `
+        songElement.innerHTML = `   
             <h3>${song.name} - ${song.price} грн</h3>
             <button onclick="details(${song.id})">Детальніше</button>
         `;

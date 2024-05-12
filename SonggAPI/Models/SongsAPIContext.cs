@@ -32,29 +32,15 @@ namespace SongsAPIWebApp.Models
                       .HasForeignKey(d => d.SongId);
             });
 
-            /*modelBuilder.Entity<Customer>(entity =>
-            {
-                entity.Property(e => e.Name).HasMaxLength(40);
-            });*/
-
             modelBuilder.Entity<Song>(entity =>
             {
-                /*entity.Property(e => e.Name).HasMaxLength(50);
-                entity.Property(e => e.DownloadLink).HasMaxLength(80);*/
-
                 entity.HasOne(d => d.Genre)
                       .WithMany(p => p.Songs)
                       .HasForeignKey(d => d.GenreId);
             });
 
-            /*modelBuilder.Entity<Genre>(entity =>
-            {
-                entity.Property(e => e.Name).HasMaxLength(20);
-            });*/
-
             modelBuilder.Entity<Purchase>(entity =>
             {
-                /*entity.Property(e => e.Status).HasMaxLength(20);*/
                 entity.HasKey(e => new { e.CustomerId, e.SongId });
 
                 entity.HasOne(d => d.Customer)
