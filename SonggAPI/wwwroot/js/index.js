@@ -16,9 +16,6 @@ function displaySongs(songs) {
 
     songs.forEach(song => {
         const songElement = document.createElement('div');
-        songElement.style.display = 'flex';
-        songElement.style.alignItems = 'center'; 
-        songElement.style.marginBottom = '10px'; 
         songElement.innerHTML = `   
             <h3>${song.name} - ${song.price} грн</h3>
             <button onclick="details(${song.id})">Детальніше</button>

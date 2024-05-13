@@ -1,5 +1,5 @@
 ﻿window.onload = function () {
-    const queryParams = new URLSearchParams(window.location.search);
+    const queryParams = new URLSearchParams(window.location.search); // містить частину URL, яка йде після знака запитання; доступ до значень через URL
     const songId = queryParams.get('id');
     fetchSongDetails(songId);
 };
@@ -14,9 +14,9 @@ async function fetchSongDetails(songId) {
     displaySongDetails(data);
 }
 
-function displaySongDetails(data, isPurchased = false) {
+function displaySongDetails(data) {
     const song = data.song;
-    const details = document.getElementById('songDetails');
+    const details = document.getElementById('songDetails'); // Знаходить HTML-елемент з ідентифікатором songDetails
     let htmlContent = `
         <p>Назва пісні: ${song.name}</p>
         <p>Ціна: ${song.price} грн</p>
@@ -24,11 +24,11 @@ function displaySongDetails(data, isPurchased = false) {
         <div>Виконавці: ${song.singersSongs.map(s => s.singer.name).join(', ')}</div>
     `;
 
-    if (isPurchased || data.isPurchased) {
+    if (data.isPurchased) {
         htmlContent += `<p>Пісню куплено. Ви можете прослухати її нижче.</p>
                         <audio controls><source src="${song.audioUrl}" type="audio/mpeg"></audio>`;
     } else {
-        htmlContent += `<button onclick="purchaseSong(${song.id})" data-song-id="${song.id}">Купити</button>`;
+        htmlContent += `<button onclick="purchaseSong(${song.id})">Купити</button>`;
     }
 
     details.innerHTML = htmlContent;
@@ -42,7 +42,6 @@ function purchaseSong(songId) {
     closeBtn.onclick = function () {
         modal.style.display = "none";
     };
-
     window.onclick = function (event) {
         if (event.target == modal) {
             modal.style.display = "none";
@@ -71,12 +70,14 @@ function purchaseSong(songId) {
             if (response.ok) {
                 alert("Пісня куплена.");
                 modal.style.display = "none";
-                fetchSongDetails(songId); // Оновлення деталей пісні
-            } else {
+                fetchSongDetails(songId);
+            }
+            else {
                 const result = await response.json();
                 alert(result.message || 'Не вдалося придбати пісню.');
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Помилка:', error);
             alert('Сталася помилка при спробі купівлі пісні.');
         }
